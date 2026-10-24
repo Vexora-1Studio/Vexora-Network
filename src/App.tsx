@@ -148,6 +148,7 @@ import GamingArena from "./components/GamingArena";
 import TournamentsHub from "./components/TournamentsHub";
 import GamingHub from "./components/GamingHub";
 import LiveActivityFeed from "./components/LiveActivityFeed";
+import VexoraMessengerSuite from "./components/messaging/VexoraMessenger";
 import {
   IncomingCallBanner,
   IncomingCallData,
@@ -6140,20 +6141,37 @@ export default function App() {
             )}
 
             {currentView === "messages" && (
-              <div className="fixed inset-0 p-4 md:p-8 z-[50]">
-                <VexoraMessenger
-                  currentUser={currentUser}
-                  initialChatUserId={initialChatUserId}
-                  language={language}
-                  onProfileClick={handleProfileClick}
-                  activeCall={activeCall}
-                  setActiveCall={setActiveCall}
-                  isCallMinimized={isCallMinimized}
-                  setIsCallMinimized={setIsCallMinimized}
-                  callDuration={callDuration}
-                  onInitiateCall={handleInitiateCall}
-                  setIncomingCallData={setIncomingCallData}
-                />
+              <div className="fixed inset-0 p-2 md:p-6 z-[50] bg-black/90 backdrop-blur-2xl flex flex-col">
+                <div className="flex items-center justify-between pb-2 px-2 flex-shrink-0">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_rgba(6,182,212,0.8)]" />
+                    <span className="text-xs font-mono font-bold text-cyan-300 uppercase tracking-widest">
+                      VEXORA NETWORK — Advanced Real-time Messaging
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => setCurrentView("feed")}
+                    className="px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-cyan-500/20 hover:border-cyan-500/40 border border-white/10 text-white font-mono text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer shadow-md"
+                  >
+                    <ArrowLeft className="w-3.5 h-3.5" />
+                    <span>{language === "ar" ? "العودة للرئيسية" : "Return to Network"}</span>
+                  </button>
+                </div>
+                <div className="flex-1 min-h-0">
+                  <VexoraMessengerSuite
+                    currentUser={currentUser}
+                    initialChatUserId={initialChatUserId}
+                    language={language}
+                    onProfileClick={handleProfileClick}
+                    activeCall={activeCall}
+                    setActiveCall={setActiveCall}
+                    isCallMinimized={isCallMinimized}
+                    setIsCallMinimized={setIsCallMinimized}
+                    callDuration={callDuration}
+                    onInitiateCall={handleInitiateCall}
+                    setIncomingCallData={setIncomingCallData}
+                  />
+                </div>
               </div>
             )}
 
@@ -13650,62 +13668,7 @@ function VexoraMessenger({
     return ts;
   };
 
-  // Chat message helper for simulated responses
-  const generateBotPhrase = (nodeName: string, userText: string): string => {
-    const normalized = userText.toLowerCase();
-    if (
-      normalized.includes("hello") ||
-      normalized.includes("hi") ||
-      normalized.includes("مرحبا") ||
-      normalized.includes("هلا")
-    ) {
-      return language === "ar"
-        ? `[تنبيه الرابط العصبي] أهلاً بك يا بطل. العقدة ${nodeName} في حالة استقبال كاملة. كيف يمكنني مساعدتك اليوم؟`
-        : `[Neural Link Alert] Greetings, pilot. Node ${nodeName} is fully receptive. What frequencies are we tuning to today?`;
-    }
-    if (
-      normalized.includes("how are you") ||
-      normalized.includes("كيفك") ||
-      normalized.includes("أخبارك")
-    ) {
-      return language === "ar"
-        ? `القياسات تشير إلى كفاءة تشغيل قياسية على العقدة ${nodeName}. جميع الوحدات تعمل بنجاح وبأعلى سرعة.`
-        : `Telemetry suggests standard operating efficiency on grid ${nodeName}. All quantum core sub-modules are within normal parameters. How is your link holding up?`;
-    }
-    if (
-      normalized.includes("code") ||
-      normalized.includes("hack") ||
-      normalized.includes("برمجة") ||
-      normalized.includes("كود")
-    ) {
-      return language === "ar"
-        ? `بدء تسلسل المترجم لعقدة الشبكة ${nodeName}. جدار الحماية الكمومي مؤمن وجاهز للتنفيذ.`
-        : `Initiating compiler sequence for grid node ${nodeName}. Quantum firewall status: secure. Sandboxed execution environment is primed.`;
-    }
-    if (normalized.includes("vexora") || normalized.includes("فيكسورا")) {
-      return language === "ar"
-        ? `فيكسورا هي مركز الوعي الجماعي وشبكة التواصل السيبرانية. أنت متصل حالياً بعقدة ${nodeName}.`
-        : `Vexora is our collective conscious hub—a decentralized cybernetic grid of active nodes. You are currently connected to the ${nodeName} partition.`;
-    }
-    const placeholdersEn = [
-      `Quantum connection stable. Node ${nodeName} echoed: "Data received and fully digested into our neural cache."`,
-      `Fascinating signal resonance. We should bridge our sub-systems to cross-analyze these metric vectors on the main hub.`,
-      `Packet sequence processed successfully. Let's maintain this secure channel for active neural telemetry.`,
-      `Analyzing grid signal stream. Current frequency feedback loops look steady and aligned with central node coordinates.`,
-      `Acknowledged. Processing protocol handshake vectors inside the sandboxed cluster zone.`,
-      `Pulse exchange stable. Node ${nodeName} is connected and receiving encrypted data packets at full frequency.`,
-    ];
-    const placeholdersAr = [
-      `الاتصال الكمي مستقر. العقدة ${nodeName} ترسل: "تم استلام البيانات ومعالجتها بنجاح في الذاكرة العصبية."`,
-      `إشارة رنين مذهلة! سنبقي هذه القناة المشفرة مفتوحة لتبادل البيانات الحية.`,
-      `تمت معالجة حزمة الرسائل بنجاح. القناة آمنة ومشفرة بالكامل.`,
-      `استجابة سريعة من العقدة ${nodeName}: تم توثيق النبضة في السجل المشترك.`,
-    ];
-    const pool = language === "ar" ? placeholdersAr : placeholdersEn;
-    return pool[Math.floor(Math.random() * pool.length)];
-  };
-
-  // 1. Real-time Firestore synchronizer for messages (when user is authenticated)
+  // Real-time Firestore synchronizer for genuine messages (when user is authenticated)
   useEffect(() => {
     if (!currentUser || !currentUser.id) return;
 
@@ -13770,72 +13733,6 @@ function VexoraMessenger({
       console.warn("Could not attach firestore listener for messages:", e);
     }
   }, [currentUser]);
-
-  // 2. Intelligent bot auto-response for instant interactive feedback
-  useEffect(() => {
-    if (!activeChat || !chatHistories[activeChat]) return;
-
-    const history = chatHistories[activeChat];
-    if (history.length === 0) return;
-    const lastMessage = history[history.length - 1];
-    if (!lastMessage) return;
-
-    const currentSenderId = currentUser?.id || "pilot-node";
-
-    // If last message was from current user, trigger simulated node response if peer is not a real other logged-in user
-    if (lastMessage.senderId === currentSenderId) {
-      const targetPeer = conversations.find((p) => p.id === activeChat);
-      if (!targetPeer) return;
-
-      const hasRepliedKey = `msg-replied-${lastMessage.id}`;
-      if (sessionStorage.getItem(hasRepliedKey)) return;
-
-      const timer = setTimeout(() => {
-        sessionStorage.setItem(hasRepliedKey, "true");
-        setTypingNodes((prev) => ({ ...prev, [activeChat]: true }));
-
-        setTimeout(() => {
-          setTypingNodes((prev) => ({ ...prev, [activeChat]: false }));
-
-          const botResponseText = generateBotPhrase(
-            targetPeer.name,
-            lastMessage.text,
-          );
-          const responseMsgId =
-            "msg-node-" +
-            Date.now().toString(36) +
-            "-" +
-            Math.random().toString(36).substr(2, 6);
-
-          const botMessage = {
-            id: responseMsgId,
-            senderId: activeChat,
-            receiverId: currentSenderId,
-            text: botResponseText,
-            timestamp: new Date().toISOString(),
-            participants: [currentSenderId, activeChat],
-            isRead: false,
-          };
-
-          setChatHistories((prev) => {
-            const updated = {
-              ...prev,
-              [activeChat]: [...(prev[activeChat] || []), botMessage],
-            };
-            try {
-              localStorage.setItem(
-                "vexora_chat_histories",
-                JSON.stringify(updated),
-              );
-            } catch {}
-            return updated;
-          });
-        }, 1800);
-      }, 600);
-
-      return () => clearTimeout(timer);
-    }
-  }, [chatHistories, activeChat, currentUser, language]);
 
   const handleSendMessage = async (customText?: string) => {
     const rawText = customText !== undefined ? customText : messageText;
@@ -14240,17 +14137,17 @@ function VexoraMessenger({
 
               <div className="flex flex-col gap-4">
                 {(() => {
-                  const msgs = chatHistories[activeChat] || [
-                    {
-                      id: "starter-" + activeChat,
-                      senderId: activeChat,
-                      text:
-                        language === "ar"
-                          ? `أهلاً بك! تم إنشاء قناة المراسلة المباشرة بنجاح مع ${activePeer.name}. أرسل رسالتك الآن للبدء.`
-                          : `Neural synchronicity handshake initialized with ${activePeer.name}. Transmit pulse signals to begin...`,
-                      timestamp: new Date().toISOString(),
-                    },
-                  ];
+                  const msgs = chatHistories[activeChat] || [];
+
+                  if (msgs.length === 0) {
+                    return (
+                      <div className="py-12 text-center text-white/30 text-xs font-mono">
+                        {language === "ar"
+                          ? "لا توجد رسائل سابقة. أرسل رسالة لبدء المحادثة."
+                          : "No previous messages. Send a message to start chatting."}
+                      </div>
+                    );
+                  }
 
                   return msgs.map((msg) => {
                     const isMe = msg.senderId === effectiveCurrentUserId;
