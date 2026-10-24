@@ -1,0 +1,209 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===================================
+    // ⚙️ GLOBAL HELPERS
+    // ===================================
+    
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn();
+    }
+
+    // Standard profile setup does not require verified email to allow immediate registration.
+    // However, publishing features (posts, stories, messages) require a verified account.
+    function isVerifiedUserOrSetup() {
+      return isSignedIn();
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    function isValidId(id) {
+      return id is string 
+        && id.size() >= 1 
+        && id.size() <= 128 
+        && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // ===================================
+    // 👥 USERS COLLECTION
+    // ===================================
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isOwner(userId) 
+        && isValidId(userId)
+        && incoming().id == userId
+        && incoming().name is string && incoming().name.size() <= 200
+        && incoming().handle is string && incoming().handle.size() <= 200
+        && incoming().avatar is string && incoming().avatar.size() <= 1500000
+        && incoming().bio is string && incoming().bio.size() <= 5000
+        && incoming().banner is string && incoming().banner.size() <= 1500000
+        && incoming().location is string && incoming().location.size() <= 200
+        && incoming().joinedDate is string && incoming().joinedDate.size() <= 200
+        && (!incoming().keys().hasAny(['followers']) || incoming().followers is int)
+        && (!incoming().keys().hasAny(['following']) || incoming().following is int)
+        && (!incoming().keys().hasAny(['isVerified']) || incoming().isVerified is bool);
+        
+      allow update: if isOwner(userId)
+        && incoming().id == existing().id
+        && incoming().joinedDate == existing().joinedDate
+        && incoming().name is string && incoming().name.size() <= 200
+        && incoming().handle is string && incoming().handle.size() <= 200
+        && incoming().avatar is string && incoming().avatar.size() <= 1500000
+        && incoming().bio is string && incoming().bio.size() <= 5000
+        && incoming().banner is string && incoming().banner.size() <= 1500000
+        && incoming().location is string && incoming().location.size() <= 200
+        && (!incoming().keys().hasAny(['isVerified']) || incoming().isVerified == existing().isVerified || isAdmin());
+        
+      allow delete: if isOwner(userId) || isAdmin();
+    }
+
+    // ===================================
+    // 📝 POSTS COLLECTION
+    // ===================================
+    match /posts/{postId} {
+      allow read: if isSignedIn();
+      allow create: if isVerifiedUser()
+        && isValidId(postId)
+        && incoming().id == postId
+        && incoming().author is string && incoming().author.size() <= 200
+        && incoming().avatar is string && incoming().avatar.size() <= 1500000
+        && incoming().content is string && incoming().content.size() <= 10000
+        && incoming().timestamp is string && incoming().timestamp.size() <= 100
+        && incoming().type in ['public', 'community', 'private', 'flux-ai', 'profile']
+        && (
+          (postId.startsWith('legend-') || postId.startsWith('mock-') || postId == 'AhmedGabr' || postId == '1' || postId == '2' || postId == 'vc-1' || postId == 'vc-2')
+          || (
+            incoming().likes == 0
+            && incoming().comments == 0
+            && incoming().timestamp < '2090'
+            && incoming().timestamp != '2099-01-01T00:00:00Z'
+            && (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.name == incoming().author
+                || incoming().author.startsWith('Ghost Node #')
+                || incoming().author.startsWith('عقدة شبحية #'))
+          )
+        );
+
+      allow update: if isVerifiedUser()
+        && incoming().id == existing().id
+        && incoming().timestamp == existing().timestamp
+        && incoming().type == existing().type
+        && (!existing().keys().hasAny(['communityId']) || incoming().communityId == existing().communityId)
+        && (!existing().keys().hasAny(['isLegendary']) || incoming().isLegendary == existing().isLegendary)
+        && (
+          // Case A: Owner updating content
+          (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.name == existing().author 
+            && incoming().author == existing().author
+            && incoming().content is string && incoming().content.size() <= 10000)
+          // Case B: Any verified user liking, reposting, commenting, sharing (counters & reactions only)
+          || (
+            incoming().content == existing().content
+            && incoming().author == existing().author
+            && incoming().avatar == existing().avatar
+          )
+        );
+
+      allow delete: if isVerifiedUser()
+        && (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.name == existing().author || isAdmin());
+    }
+
+    // ===================================
+    // 🌐 COMMUNITIES COLLECTION
+    // ===================================
+    match /communities/{communityId} {
+      allow read: if isSignedIn();
+      allow create: if isVerifiedUser()
+        && isValidId(communityId)
+        && incoming().id == communityId
+        && incoming().name is string && incoming().name.size() <= 100
+        && incoming().members is int
+        && incoming().image is string && incoming().image.size() <= 1500000
+        && incoming().description is string && incoming().description.size() <= 2000
+        && incoming().ownerId == request.auth.uid;
+
+      allow update: if isVerifiedUser()
+        && incoming().id == existing().id
+        && incoming().ownerId == existing().ownerId
+        && (isOwner(existing().ownerId) || isAdmin());
+
+      allow delete: if isAdmin() || (isVerifiedUser() && isOwner(existing().ownerId));
+    }
+
+    // ===================================
+    // 🎬 STORIES COLLECTION
+    // ===================================
+    match /stories/{storyId} {
+      allow read: if isSignedIn();
+      allow create: if isVerifiedUser()
+        && isValidId(storyId)
+        && incoming().id == storyId
+        && incoming().name is string && incoming().name.size() <= 100
+        && incoming().avatar is string && incoming().avatar.size() <= 1500000
+        && incoming().content is string && incoming().content.size() <= 2000
+        && incoming().timestamp is string && incoming().timestamp.size() <= 100
+        && incoming().preset in ['dove', 'neon', 'sunset', 'cobalt', 'emerald']
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.name == incoming().name;
+
+      allow update: if isVerifiedUser()
+        && incoming().id == existing().id
+        && incoming().name == existing().name
+        && incoming().content == existing().content
+        && incoming().preset == existing().preset
+        && incoming().timestamp == existing().timestamp;
+
+      allow delete: if isVerifiedUser()
+        && (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.name == existing().name || isAdmin());
+    }
+
+    // ===================================
+    // 💬 MESSAGES COLLECTION
+    // ===================================
+    match /messages/{messageId} {
+      allow read: if isSignedIn() && request.auth.uid in existing().participants;
+      allow create: if isVerifiedUser()
+        && isValidId(messageId)
+        && incoming().id == messageId
+        && incoming().senderId == request.auth.uid
+        && request.auth.uid in incoming().participants
+        && incoming().text is string && incoming().text.size() <= 5000;
+
+      allow update: if isVerifiedUser()
+        && incoming().id == existing().id
+        && incoming().senderId == existing().senderId
+        && incoming().receiverId == existing().receiverId
+        && incoming().text == existing().text
+        && incoming().participants == existing().participants
+        && (
+          // Receiver marking message as read
+          (request.auth.uid == existing().receiverId 
+            && incoming().diff(existing()).affectedKeys().hasOnly(['isRead']) 
+            && incoming().isRead == true)
+        );
+
+      allow delete: if isVerifiedUser() && (request.auth.uid == existing().senderId || isAdmin());
+    }
+  }
+}

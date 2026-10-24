@@ -1,0 +1,124 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile or active node in the Vexora network",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "The unique identifier, matching auth UID or assigned node key" },
+        "name": { "type": "string", "description": "The user's display name" },
+        "handle": { "type": "string", "description": "The username handle starting with @" },
+        "email": { "type": "string", "description": "Optional private email address linked with auth" },
+        "avatar": { "type": "string", "description": "URL to the user's avatar image" },
+        "bio": { "type": "string", "description": "Hex-encoded bio or normal description text" },
+        "banner": { "type": "string", "description": "URL of the custom profile banner image" },
+        "location": { "type": "string", "description": "Physical, digital, or neural location grid identifier" },
+        "joinedDate": { "type": "string", "description": "The creation timestamp when user node initialized" },
+        "followers": { "type": "number", "description": "Number of users following this node" },
+        "following": { "type": "number", "description": "Number of other nodes this user follows" },
+        "isVerified": { "type": "boolean", "description": "Flag for validated or admin nodes" },
+        "followingIds": { "type": "array", "description": "A set of user IDs followed by this user" },
+        "friendIds": { "type": "array", "description": "A set of user IDs connected as friends" }
+      },
+      "required": ["id", "name", "handle", "avatar", "bio", "banner", "location", "joinedDate", "followers", "following"]
+    },
+    "Post": {
+      "title": "Post",
+      "description": "A pulse transmitted on the network feed",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique pulse UUID" },
+        "author": { "type": "string", "description": "Display name of the author" },
+        "avatar": { "type": "string", "description": "Avatar of the transmitting author" },
+        "content": { "type": "string", "description": "Main textual payload of the pulse" },
+        "timestamp": { "type": "string", "description": "Creation timestamp represented as a text or date string" },
+        "type": { "type": "string", "enum": ["public", "community", "private", "flux-ai", "profile"], "description": "Distribution grid scope" },
+        "likes": { "type": "number" },
+        "comments": { "type": "number" },
+        "reposts": { "type": "number" },
+        "shares": { "type": "number" },
+        "image": { "type": "string", "description": "Optional image asset attachment URL" },
+        "gif": { "type": "string", "description": "Optional GIF attachment URL from system" },
+        "video": { "type": "string", "description": "Optional video asset path" },
+        "communityId": { "type": "string", "description": "Associated community ID if type is community" },
+        "isLiked": { "type": "boolean" },
+        "isReposted": { "type": "boolean" },
+        "isUnlisted": { "type": "boolean" },
+        "isLegendary": { "type": "boolean" }
+      },
+      "required": ["id", "author", "avatar", "content", "timestamp", "type", "likes", "comments"]
+    },
+    "Community": {
+      "title": "Community",
+      "description": "A localized cluster group for specialized discussion and updates",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique cluster ID" },
+        "name": { "type": "string", "description": "Standard cluster display name" },
+        "members": { "type": "number", "description": "Count of synchronized node participants" },
+        "image": { "type": "string", "description": "Thumbnail image of the community cluster" },
+        "banner": { "type": "string", "description": "Optional banner header image" },
+        "description": { "type": "string", "description": "Statement of purpose for the cluster" },
+        "createdAt": { "type": "string" },
+        "category": { "type": "string", "description": "Filtering category" },
+        "ownerId": { "type": "string", "description": "Auth UID who initiated the group" },
+        "isVerified": { "type": "boolean" }
+      },
+      "required": ["id", "name", "members", "image", "description", "createdAt", "category"]
+    },
+    "Story": {
+      "title": "Story",
+      "description": "A fading ephemeral text story or pulse",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique story ID" },
+        "name": { "type": "string" },
+        "avatar": { "type": "string" },
+        "content": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "preset": { "type": "string", "enum": ["dove", "neon", "sunset", "cobalt", "emerald"] },
+        "likesCount": { "type": "number" },
+        "loveCount": { "type": "number" },
+        "hahaCount": { "type": "number" }
+      },
+      "required": ["id", "name", "avatar", "content", "timestamp", "preset"]
+    },
+    "Message": {
+      "title": "Message",
+      "description": "A secure direct message pulse between nodes",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique message UUID" },
+        "senderId": { "type": "string", "description": "The node that transmitted this message" },
+        "receiverId": { "type": "string", "description": "The target node that receives this message" },
+        "text": { "type": "string", "description": "Textual payload of the message" },
+        "timestamp": { "type": "string", "description": "The exact transmission timestamp" },
+        "participants": { "type": "array", "description": "Array of user IDs who are participants in this chat (sender and receiver)" },
+        "isRead": { "type": "boolean", "description": "Read receipt flag" }
+      },
+      "required": ["id", "senderId", "receiverId", "text", "timestamp", "participants"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Profiles of registered nodes synced via Firebase Auth"
+    },
+    "/posts/{postId}": {
+      "schema": "Post",
+      "description": "Synchronized global or community feed items"
+    },
+    "/communities/{communityId}": {
+      "schema": "Community",
+      "description": "Federated discussion clusters"
+    },
+    "/stories/{storyId}": {
+      "schema": "Story",
+      "description": "Ephemeral stories"
+    },
+    "/messages/{messageId}": {
+      "schema": "Message",
+      "description": "End-to-end direct messages between participants"
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "Vexora Network",
+  "description": "منصة اجتماعية متطورة تتيح التواصل مع الأصدقاء والمجتمعات ومشاركة اللحظات بخصوصية تامة وتصميم عصري باسم Vexora Network.",
+  "requestFramePermissions": ["camera", "microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
