@@ -223,8 +223,29 @@ function sanitizeForFirestore<T extends Record<string, any>>(obj: T): T {
   return clean;
 }
 
-// Initialize socket
-const socket: Socket = io(window.location.origin);
+// Initialize socket with fallback for static hosts (like GitHub Pages where no websocket server exists)
+let socket: Socket | any;
+try {
+  // Only auto-connect if not on github.io static page, or with autoConnect: false to prevent unhandled connection errors
+  const isStaticHost = typeof window !== 'undefined' && (window.location.hostname.includes('github.io') || window.location.hostname.includes('pages.dev'));
+  socket = io(typeof window !== 'undefined' ? window.location.origin : '', {
+    autoConnect: !isStaticHost,
+    reconnectionAttempts: 3,
+    timeout: 5000,
+  });
+  socket.on?.('connect_error', () => {
+    // Graceful silent ignore on static deployments
+  });
+} catch (e) {
+  console.info('Socket.io running in offline fallback mode:', e);
+  socket = {
+    on: () => {},
+    off: () => {},
+    emit: () => {},
+    disconnect: () => {},
+    connected: false,
+  };
+}
 
 const translations = {
   en: {
@@ -4850,7 +4871,7 @@ export default function App() {
   }, [isDevMode]);
 
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
+    const handleMouseMove = (e: globalThis.MouseEvent) => {
       document.documentElement.style.setProperty("--mouse-x", `${e.clientX}px`);
       document.documentElement.style.setProperty("--mouse-y", `${e.clientY}px`);
     };
@@ -11173,7 +11194,7 @@ function VexoraAITerminal() {
   >([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [personality, setPersonality] = useState<"vexora" | "banana">("vexora");
+  const [personality, setPersonality] = useState<"vexora" | "banana" | "flux">("vexora");
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editingText, setEditingText] = useState("");
   const [hasApiKey, setHasApiKey] = useState<boolean | null>(null);
@@ -12776,10 +12797,11 @@ function PostCard({
                 >
                   {post.author}
                   {isVerifiedUser && (
-                    <CheckCircle2
-                      className="w-4 h-4 text-sky-400 fill-sky-400/10 drop-shadow-[0_0_6px_rgba(56,189,248,0.5)] cursor-help"
-                      title="Verified User"
-                    />
+                    <span title="Verified User" className="inline-flex items-center">
+                      <CheckCircle2
+                        className="w-4 h-4 text-sky-400 fill-sky-400/10 drop-shadow-[0_0_6px_rgba(56,189,248,0.5)] cursor-help"
+                      />
+                    </span>
                   )}
                 </span>
                 {isOwnerPost && (

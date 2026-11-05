@@ -1,5 +1,13 @@
 # 🌐 Vexora Network
 
+[![CI Build](https://img.shields.io/badge/CI-GitHub_Actions-2088FF?logo=github-actions&logoColor=white)](.github/workflows/ci.yml)
+[![Pages Deployment](https://img.shields.io/badge/Deploy-GitHub_Pages-22c55e?logo=github&logoColor=white)](.github/workflows/deploy.yml)
+[![React 19](https://img.shields.io/badge/React-19.0-61DAFB?logo=react&logoColor=black)](https://react.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-6.2-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.1-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 > **منصة اجتماعية وتفاعلية متكاملة تجمع بين التواصل العصري، المجموعات التفاعلية، المحادثات الفورية، وإمكانيات الذكاء الاصطناعي.**
 
 ---
@@ -139,12 +147,33 @@ git push -u origin main
 
 ---
 
+## 🚀 النشر على GitHub Pages / Deploying to GitHub Pages
+
+المشروع مُهيأ بالكامل للنشر على **GitHub Pages** بدعم كامل للـ SPA (Single Page Application):
+
+### الطريقة الأولى: النشر التلقائي عبر GitHub Actions (الموصى بها)
+1. افتح مستودعك على GitHub ثم اذهب إلى **Settings > Pages**.
+2. في خانة **Source**، اختر **GitHub Actions**.
+3. بمجرد عمل `git push` إلى فرع `main`، سيقوم ملف سير العمل `.github/workflows/deploy.yml` ببناء ونشر التطبيق تلقائياً!
+
+### الطريقة الثانية: النشر اليدوي عبر مجلد `/docs`
+1. نفذ أمر البناء: `npm run build`
+2. قم بعمل commit للمجلد الناتج:
+```bash
+git add docs/
+git commit -m "build: update docs for GitHub Pages"
+git push
+```
+3. في **Settings > Pages** على GitHub، اختر **Deploy from a branch** وحدد فرع `main` ومجلد `/docs`.
+
+---
+
 ## 📜 الأوامر المتاحة / Available Scripts
 
 | الأمر | الوصف |
 |---|---|
 | `npm run dev` | تشغيل المشروع في بيئة التطوير السريعة (TypeScript + Express + Vite). |
-| `npm run build` | بناء نسخة الإنتاج الكاملة للواجهة الأمامية والخلفية داخل مجلد `dist/`. |
+| `npm run build` | بناء نسخة الإنتاج الكاملة للواجهة الأمامية والخلفية داخل مجلد `dist/` مع إنشاء `404.html` و `.nojekyll`. |
 | `npm start` | تشغيل خادم الإنتاج المترجم بعد عمل `build`. |
 | `npm run lint` | فحص أخطاء وتوافق أكواد TypeScript. |
 | `npm run clean` | مسح مجلد الإنتاج `dist` لإعادة البناء من الصفر. |
@@ -154,22 +183,31 @@ git push -u origin main
 ## 📂 هيكل المشروع / Project Structure
 
 ```text
+├── .github/
+│   ├── workflows/
+│   │   ├── ci.yml                 # سير عمل الفحص التلقائي للنوع والبناء (Continuous Integration)
+│   │   └── deploy.yml             # سير عمل النشر التلقائي على GitHub Pages
+│   ├── ISSUE_TEMPLATE/
+│   │   ├── bug_report.md          # قالب بلاغات الأخطاء
+│   │   └── feature_request.md     # قالب اقتراح الميزات
+│   ├── pull_request_template.md   # قالب طلبات السحب (PRs)
+│   └── dependabot.yml             # التحديث الآلي للحزم ومكتبات GitHub Actions
 ├── src/
-│   ├── components/            # مكونات الواجهة التفاعلية (Chat, Modals, Feed, Settings)
-│   ├── lib/                   # دوال مساعدة وإعدادات Firebase
-│   ├── App.tsx                # المكون الرئيسي وتنسيق الصفحات والملاحة
-│   ├── main.tsx               # نقطة انطلاق تطبيق React
-│   ├── types.ts               # تعريفات الأنواع (TypeScript Types & Interfaces)
-│   └── index.css              # ملف تنسيقات Tailwind العالمية
-├── server.ts                  # خادم Express ومسارات الـ API وإدارة الـ WebSockets
-├── metadata.json              # بيانات التطبيق وصلاحياته
-├── index.html                 # ملف الدخول الرئيسي للصفحة
-├── package.json               # الحزم والمكتبات والسكربتات
-├── vite.config.ts             # إعدادات Vite
-├── tsconfig.json              # إعدادات مترجم TypeScript
-├── .env.example               # نموذج المتغيرات البيئية
-├── .gitignore                 # استثناء الملفات الحساسة والمؤقتة من Git
-└── README.md                  # دليل المشروع والتوثيق
+│   ├── components/                # مكونات الواجهة التفاعلية (Chat, Modals, Feed, Settings)
+│   ├── lib/                       # دوال مساعدة وإعدادات Firebase
+│   ├── App.tsx                    # المكون الرئيسي وتنسيق الصفحات والملاحة
+│   ├── main.tsx                   # نقطة انطلاق تطبيق React
+│   ├── types.ts                   # تعريفات الأنواع (TypeScript Types & Interfaces)
+│   └── index.css                  # ملف تنسيقات Tailwind العالمية
+├── server.ts                      # خادم Express ومسارات الـ API وإدارة الـ WebSockets
+├── metadata.json                  # بيانات التطبيق وصلاحياته
+├── index.html                     # ملف الدخول الرئيسي للصفحة
+├── package.json                   # الحزم والمكتبات والسكربتات
+├── vite.config.ts                 # إعدادات Vite
+├── tsconfig.json                  # إعدادات مترجم TypeScript
+├── .env.example                   # نموذج المتغيرات البيئية
+├── .gitignore                     # استثناء الملفات الحساسة والمؤقتة من Git
+└── README.md                      # دليل المشروع والتوثيق
 ```
 
 ---

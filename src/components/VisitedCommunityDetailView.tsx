@@ -1029,7 +1029,6 @@ export default function VisitedCommunityDetailView({
                                     src={post.video} 
                                     controls 
                                     className="max-h-96 object-contain rounded-2xl w-full" 
-                                    referrerPolicy="no-referrer" 
                                   />
                                 </div>
                               )}

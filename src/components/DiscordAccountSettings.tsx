@@ -104,7 +104,7 @@ export default function DiscordAccountSettings({
   const [showPhone, setShowPhone] = useState(false);
 
   // Edit modals state
-  const [editingField, setEditingField] = useState<'username' | 'email' | 'phone' | 'password' | null>(null);
+  const [editingField, setEditingField] = useState<'username' | 'email' | 'displayName' | 'phone' | 'password' | null>(null);
   const [editValue, setEditValue] = useState('');
   const [editPasswordValue, setEditPasswordValue] = useState('');
   const [editPasswordConfirm, setEditPasswordConfirm] = useState('');
